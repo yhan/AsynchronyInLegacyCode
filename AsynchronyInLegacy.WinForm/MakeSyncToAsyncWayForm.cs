@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace AsynchronyInLegacy.WinForm
+﻿namespace AsynchronyInLegacy.WinForm
 {
+    using System;
     using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows.Forms;
 
     public partial class MakeSyncToAsyncWayForm : Form
     {
@@ -19,11 +12,31 @@ namespace AsynchronyInLegacy.WinForm
             InitializeComponent();
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private async void btnStart_Click(object sender, EventArgs e)
         {
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            await WrappedLegacyCall();
+            LegacyCall();
+        }
 
-            textBoxResult.Text = "Legacy computed result";
+        private async Task WrappedLegacyCall()
+        {
+            string result = string.Empty;
+            await Task.Run(() =>
+            {
+                // For example, before refactoring, we will block UI thread
+                // Now GUI won't be blocked.
+                result = LegacyCall();
+            });
+
+            this.textBoxResult.Text = result;
+        }
+
+        private string LegacyCall()
+        {
+            // Imagine we have an I/O here
+
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+            return "Legacy computed result";
         }
     }
 }
